@@ -7,6 +7,7 @@ exclude_paths:
   - astro.config.mjs
   - vitest.config.ts
   - tailwind.config.mjs
+  - src/middleware.ts
   - "**/.gitkeep"
   - "supabase/migrations/**"
   - ".github/workflows/**"
