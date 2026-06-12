@@ -1,0 +1,57 @@
+---
+interface Props {
+  title: string
+}
+
+const { title } = Astro.props
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta property="og:title" content={title} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-bg text-ink font-body">
+    <nav class="border-b border-bg/50 bg-surface/80 backdrop-blur-sm">
+      <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/" class="font-display text-xl text-ink hover:text-primary transition-colors">
+          Nido
+        </a>
+        <ul class="flex gap-6">
+          <li>
+            <a href="/paneles" class="text-ink hover:text-primary transition-colors text-sm font-medium">
+              Paneles SIP
+            </a>
+          </li>
+          <li>
+            <a href="/casas" class="text-ink hover:text-primary transition-colors text-sm font-medium">
+              Casas
+            </a>
+          </li>
+          <li>
+            <a href="/contacto" class="text-ink hover:text-primary transition-colors text-sm font-medium">
+              Contacto
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <main class="min-h-screen">
+      <slot />
+    </main>
+    <footer class="border-t border-bg/50 py-8 mt-16">
+      <div class="container mx-auto px-4 text-center">
+        <p class="text-muted text-sm">&copy; Nido. Todos los derechos reservados.</p>
+      </div>
+    </footer>
+  </body>
+</html>

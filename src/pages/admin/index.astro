@@ -1,0 +1,24 @@
+---
+export const prerender = false
+
+import AdminLayout from '@/layouts/AdminLayout.astro'
+---
+
+<AdminLayout title="Panel Admin — Nido">
+  <h1 class="font-display text-3xl text-ink mb-6">Panel Admin</h1>
+  <!-- Dashboard placeholder — populated in admin phase -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-surface rounded p-6 border border-bg/50">
+      <p class="text-muted text-sm font-medium">Paneles SIP</p>
+      <p class="text-ink text-2xl font-semibold mt-1">—</p>
+    </div>
+    <div class="bg-surface rounded p-6 border border-bg/50">
+      <p class="text-muted text-sm font-medium">Casas</p>
+      <p class="text-ink text-2xl font-semibold mt-1">—</p>
+    </div>
+    <div class="bg-surface rounded p-6 border border-bg/50">
+      <p class="text-muted text-sm font-medium">Cotizaciones</p>
+      <p class="text-ink text-2xl font-semibold mt-1">—</p>
+    </div>
+  </div>
+</AdminLayout>
