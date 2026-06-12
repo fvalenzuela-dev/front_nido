@@ -21,6 +21,9 @@ export function addToCart(item: CartItem): void {
 }
 
 export function removeFromCart(id: string): void {
-  const { [id]: _, ...rest } = cartItems.get()
-  cartItems.set(rest)
+  cartItems.set(
+    Object.fromEntries(
+      Object.entries(cartItems.get()).filter(([key]) => key !== id)
+    ) as Record<string, CartItem>
+  )
 }
