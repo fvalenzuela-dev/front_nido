@@ -9,5 +9,10 @@ export default getViteConfig({
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['**/*.astro'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['lcov', 'text'],
+      reportsDirectory: './coverage',
+    },
   },
 } as ViteUserConfig)
