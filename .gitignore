@@ -19,6 +19,9 @@ dist/
 # TypeScript
 *.tsbuildinfo
 
+# Coverage
+coverage/
+
 # OS
 .DS_Store
 Thumbs.db
