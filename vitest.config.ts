@@ -11,6 +11,13 @@ export default getViteConfig({
       provider: 'v8',
       reporter: ['lcov', 'text'],
       reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.astro',
+        'src/**/*.d.ts',
+        'src/types/**',
+        'src/env.d.ts',
+      ],
     },
   },
 })
