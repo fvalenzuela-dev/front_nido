@@ -1,0 +1,13 @@
+---
+exclude_paths:
+  - CLAUDE.md
+  - env.example
+  - pnpm-lock.yaml
+  - src/env.d.ts
+  - astro.config.mjs
+  - vitest.config.ts
+  - tailwind.config.mjs
+  - src/middleware.ts
+  - "**/.gitkeep"
+  - "supabase/migrations/**"
+  - ".github/workflows/**"
