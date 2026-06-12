@@ -2,5 +2,8 @@
 exclude_paths:
   - CLAUDE.md
   - env.example
+  - pnpm-lock.yaml
+  - src/env.d.ts
   - "**/.gitkeep"
   - "supabase/migrations/**"
+  - ".github/workflows/**"
