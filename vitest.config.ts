@@ -1,7 +1,13 @@
 /// <reference types="vitest" />
-import { getViteConfig } from 'astro/config'
+import { defineConfig } from 'vitest/config'
+import { resolve } from 'path'
 
-export default getViteConfig({
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -17,8 +23,8 @@ export default getViteConfig({
         'src/**/*.d.ts',
         'src/types/**',
         'src/env.d.ts',
-        'src/lib/**',       // wrappers de servicios externos (Supabase)
-        'src/middleware.ts', // integración — se testea con e2e
+        'src/lib/**',
+        'src/middleware.ts',
       ],
     },
   },
