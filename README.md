@@ -27,7 +27,7 @@ Plataforma web para empresa fabricante de **paneles SIP** y **casas prefabricada
 ## Requisitos
 
 - Node.js 18+
-- npm 9+
+- pnpm 11+
 - Cuenta en [Supabase](https://supabase.com)
 - Cuenta en [Vercel](https://vercel.com)
 
@@ -38,7 +38,7 @@ Plataforma web para empresa fabricante de **paneles SIP** y **casas prefabricada
 ### 1. Instalar dependencias
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 2. Variables de entorno
@@ -64,7 +64,7 @@ PUBLIC_SITE_URL=https://tu-dominio.com
 ### 3. Generar tipos de Supabase (después de crear las tablas)
 
 ```bash
-npx supabase gen types typescript --project-id TU_PROJECT_ID > src/types/supabase.ts
+pnpm supabase gen types typescript --project-id TU_PROJECT_ID > src/types/supabase.ts
 ```
 
 ---
@@ -73,25 +73,25 @@ npx supabase gen types typescript --project-id TU_PROJECT_ID > src/types/supabas
 
 ```bash
 # Servidor de desarrollo
-npm run dev
+pnpm dev
 
 # Build de producción
-npm run build
+pnpm build
 
 # Preview del build local
-npm run preview
+pnpm preview
 
 # Verificación de tipos
-npm run typecheck
+pnpm typecheck
 
 # Tests unitarios (modo watch)
-npm run test
+pnpm test
 
 # Tests unitarios (modo CI / una ejecución)
-npm run test:run
+pnpm test:run
 
 # Aplicar migración a Supabase
-npx supabase db push
+pnpm supabase db push
 ```
 
 ---
@@ -180,7 +180,7 @@ Tipografía: **Playfair Display** para títulos (`font-display`), **Inter** para
 
 ## Checklist antes de hacer un PR
 
-- [ ] `npm run typecheck` sin errores
+- [ ] `pnpm typecheck` sin errores
 - [ ] RLS activado en todas las tablas nuevas
 - [ ] Variables de entorno nuevas en `env.example`
 - [ ] `SUPABASE_SERVICE_KEY` no importada en componentes cliente
