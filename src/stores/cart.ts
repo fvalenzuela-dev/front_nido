@@ -21,6 +21,6 @@ export function addToCart(item: CartItem): void {
 }
 
 export function removeFromCart(id: string): void {
-  const { [id]: _removed, ...rest } = cartItems.get()
+  const { [id]: _, ...rest } = cartItems.get()
   cartItems.set(rest)
 }

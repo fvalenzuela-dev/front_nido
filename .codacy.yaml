@@ -4,6 +4,9 @@ exclude_paths:
   - env.example
   - pnpm-lock.yaml
   - src/env.d.ts
+  - astro.config.mjs
+  - vitest.config.ts
+  - tailwind.config.mjs
   - "**/.gitkeep"
   - "supabase/migrations/**"
   - ".github/workflows/**"
