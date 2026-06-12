@@ -17,7 +17,6 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/types/**',
         'src/env.d.ts',
-        'src/lib/**',
         'src/middleware.ts',
       ],
     },
