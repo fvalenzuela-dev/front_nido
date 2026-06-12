@@ -17,6 +17,8 @@ export default getViteConfig({
         'src/**/*.d.ts',
         'src/types/**',
         'src/env.d.ts',
+        'src/lib/**',       // wrappers de servicios externos (Supabase)
+        'src/middleware.ts', // integración — se testea con e2e
       ],
     },
   },
