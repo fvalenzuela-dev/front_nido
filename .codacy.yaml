@@ -1,0 +1,6 @@
+---
+exclude_paths:
+  - CLAUDE.md
+  - env.example
+  - "**/.gitkeep"
+  - "supabase/migrations/**"
