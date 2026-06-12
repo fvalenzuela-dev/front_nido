@@ -29,7 +29,7 @@ jobs:
           node-version: '22'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@fe02b34f77f8bc703788d534755dc15f7e28d4c5 # v4.1.0
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: pnpm install
