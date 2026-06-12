@@ -26,7 +26,7 @@ Plataforma web para empresa fabricante de **paneles SIP** y **casas prefabricada
 
 ## Requisitos
 
-- Node.js 18+
+- Node.js 22+
 - pnpm 11+
 - Cuenta en [Supabase](https://supabase.com)
 - Cuenta en [Vercel](https://vercel.com)
