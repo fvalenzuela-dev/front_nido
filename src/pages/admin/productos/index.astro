@@ -2,14 +2,61 @@
 export const prerender = false
 
 import AdminLayout from '@/layouts/AdminLayout.astro'
+import { fetchPanels, toPanelCard } from '@/lib/panels'
+import { getSupabaseAdmin } from '@/lib/supabase'
+
+// CLAUDE.md §14 rule-6 exception: plain <img> used intentionally in the card grid below.
+// imagenes[] contains arbitrary runtime-remote URLs; the imagenes-publicas bucket does not
+// exist yet and astro.config.mjs uses a placeholder domain. Passing unknown remote URLs to
+// Astro <Image> risks build/runtime failures and defeats the no-crash requirement.
+// Single migration point: toPanelCard's mainImage field in src/lib/panels.ts.
+// Revisit when a real bucket + verified remotePatterns are configured.
+
+const { panels, error } = await fetchPanels(getSupabaseAdmin())
+const cards = panels.map(toPanelCard)
 ---
 
 <AdminLayout title="Paneles SIP — Admin — Nido">
   <div class="flex items-center justify-between mb-6">
     <h1 class="font-display text-3xl text-ink">Paneles SIP — Admin</h1>
   </div>
-  <!-- Products table placeholder — implemented in CRUD phase -->
-  <div class="bg-surface rounded border border-bg/50 p-8">
-    <p class="text-muted text-sm">Listado de productos próximamente</p>
-  </div>
+
+  {cards.length === 0 || error ? (
+    <div class="bg-surface rounded border border-bg/50 p-8">
+      <p class="text-muted text-sm">No hay paneles para mostrar.</p>
+    </div>
+  ) : (
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {cards.map(card => (
+        <div class="bg-surface rounded border border-bg/50 p-4 flex flex-col">
+          {card.mainImage ? (
+            <img
+              src={card.mainImage}
+              alt={card.nombre}
+              loading="lazy"
+              class="aspect-video rounded bg-bg mb-3 object-cover w-full"
+            />
+          ) : (
+            <div class="aspect-video rounded bg-bg mb-3 flex items-center justify-center">
+              <span class="text-muted text-xs">Sin imagen</span>
+            </div>
+          )}
+
+          <h2 class="font-display text-lg text-ink mb-1">{card.nombre}</h2>
+
+          <p class="text-muted text-sm">{card.espesorLabel}</p>
+          <p class="text-muted text-sm">{card.precioLabel}</p>
+          <p class="text-muted text-sm">Stock: {card.stock}</p>
+
+          <div class="mt-3">
+            {card.publicado ? (
+              <span class="bg-primary text-white text-xs px-2 py-0.5 rounded">{card.estadoLabel}</span>
+            ) : (
+              <span class="bg-bg text-muted text-xs px-2 py-0.5 rounded">{card.estadoLabel}</span>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
 </AdminLayout>
