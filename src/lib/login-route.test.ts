@@ -215,9 +215,8 @@ describe('handleLoginPost', () => {
     const cookies = makeCookieStub()
     const redirect = makeRedirectStub()
 
-    const throwingSignIn = async () => {
-      throw new Error('unexpected signIn failure')
-    }
+    const throwingSignIn = (): Promise<never> =>
+      Promise.reject(new Error('unexpected signIn failure'))
 
     const res = await handleLoginPost(
       { request: makeFormRequest('user@example.com', 'pass'), cookies, redirect },
@@ -261,8 +260,8 @@ describe('handleLoginPost', () => {
 
     const accessCall = cookies._calls.find((c) => c.name === 'sb-access-token')
     expect(accessCall).toBeDefined()
-    expect(accessCall!.value).toBe(fakeSession.access_token)
-    expect(accessCall!.options.maxAge).toBe(ACCESS_MAX_AGE)
+    expect(accessCall?.value).toBe(fakeSession.access_token)
+    expect(accessCall?.options.maxAge).toBe(ACCESS_MAX_AGE)
   })
 
   it('success → sets sb-refresh-token cookie with REFRESH_MAX_AGE and correct name/value', async () => {
@@ -276,8 +275,8 @@ describe('handleLoginPost', () => {
 
     const refreshCall = cookies._calls.find((c) => c.name === 'sb-refresh-token')
     expect(refreshCall).toBeDefined()
-    expect(refreshCall!.value).toBe(fakeSession.refresh_token)
-    expect(refreshCall!.options.maxAge).toBe(REFRESH_MAX_AGE)
+    expect(refreshCall?.value).toBe(fakeSession.refresh_token)
+    expect(refreshCall?.options.maxAge).toBe(REFRESH_MAX_AGE)
   })
 
   it('success → both cookies have httpOnly=true, sameSite="lax", path="/"', async () => {
