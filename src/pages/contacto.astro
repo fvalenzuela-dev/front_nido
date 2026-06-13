@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button.astro'
 <Layout title="Cotización — Nido">
   <section class="bg-bg">
     <div class="container mx-auto px-4 py-16 max-w-2xl">
+      <h1 class="sr-only">Solicitar una cotización</h1>
       <SectionHeader
         eyebrow="Contacto"
         title="Solicita una cotización"
@@ -15,7 +16,7 @@ import Button from '@/components/ui/Button.astro'
       />
 
       <Card>
-        <form method="POST" action="/api/contacto" class="space-y-5">
+        <form method="POST" action="#" class="space-y-5">
           <!-- Nombre -->
           <div>
             <label for="nombre" class="block text-sm font-body font-medium text-ink mb-1">
@@ -53,14 +54,13 @@ import Button from '@/components/ui/Button.astro'
           <!-- Teléfono -->
           <div>
             <label for="telefono" class="block text-sm font-body font-medium text-ink mb-1">
-              Teléfono
+              Teléfono <span class="text-muted font-normal">(opcional)</span>
             </label>
             <input
               id="telefono"
               type="tel"
               name="telefono"
               autocomplete="tel"
-              aria-label="Número de teléfono (opcional)"
               class="w-full px-3 py-2 border border-border rounded bg-bg text-ink font-body text-sm
                      focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/50"
             />
@@ -112,6 +112,9 @@ import Button from '@/components/ui/Button.astro'
             <Button type="submit" variant="primary" size="lg" class="w-full">
               Enviar cotización
             </Button>
+            <p class="mt-2 text-xs text-muted text-center">
+              El envío del formulario estará disponible próximamente.
+            </p>
           </div>
         </form>
       </Card>
