@@ -1,10 +1,137 @@
 ---
 import Layout from '@/layouts/Layout.astro'
+import PageHero from '@/components/ui/PageHero.astro'
+import SectionHeader from '@/components/ui/SectionHeader.astro'
+import Card from '@/components/ui/Card.astro'
+import Button from '@/components/ui/Button.astro'
 ---
 
 <Layout title="Inicio — Nido">
-  <section class="container mx-auto px-4 py-16">
-    <h1 class="font-display text-4xl text-ink mb-4">Bienvenido a Nido</h1>
-    <p class="text-muted">Paneles SIP y casas prefabricadas de calidad.</p>
+  <!-- Hero editorial: fondo bg-bg heredado del body -->
+  <section class="bg-bg">
+    <PageHero
+      eyebrow="Construcción sustentable"
+      title="Casas que se sienten como hogar desde el primer día"
+      subtitle="Fabricamos paneles SIP y casas prefabricadas con materiales de alta calidad. Eficiencia térmica, rapidez de montaje y diseño que respeta el entorno."
+    >
+      <!-- Slot CTA (default) -->
+      <Button href="/paneles" size="lg">Ver paneles SIP</Button>
+      <Button href="/contacto" variant="secondary" size="lg">Solicitar cotización</Button>
+    </PageHero>
+  </section>
+
+  <!-- Propuestas de valor: fondo bg-surface -->
+  <section class="bg-surface py-16 lg:py-24">
+    <div class="container mx-auto px-4">
+      <SectionHeader
+        eyebrow="Por qué elegirnos"
+        title="Construido para durar, diseñado para vivir"
+        description="Más de 10 años fabricando soluciones constructivas que combinan eficiencia, confort y sustentabilidad."
+        align="center"
+      />
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Tarjeta: Eficiencia térmica -->
+        <Card hover>
+          <!-- Ícono decorativo CSS -->
+          <div class="w-12 h-12 rounded bg-primary/10 flex items-center justify-center mb-4" aria-hidden="true">
+            <div class="w-6 h-6 rounded-sm bg-primary/40"></div>
+          </div>
+          <h3 class="font-display text-lg text-ink mb-2">Eficiencia térmica</h3>
+          <p class="text-muted text-sm leading-relaxed">
+            Nuestros paneles SIP logran valores R superiores a la mampostería tradicional,
+            reduciendo costos de calefacción y refrigeración hasta un 50%.
+          </p>
+        </Card>
+
+        <!-- Tarjeta: Montaje rápido -->
+        <Card hover>
+          <div class="w-12 h-12 rounded bg-secondary/10 flex items-center justify-center mb-4" aria-hidden="true">
+            <div class="w-6 h-6 rounded-sm bg-secondary/40"></div>
+          </div>
+          <h3 class="font-display text-lg text-ink mb-2">Montaje rápido</h3>
+          <p class="text-muted text-sm leading-relaxed">
+            Una casa de 80 m² se levanta en 4 a 6 semanas. El sistema SIP permite trabajar
+            en paralelo con otras instalaciones, acortando plazos de obra.
+          </p>
+        </Card>
+
+        <!-- Tarjeta: Diseño personalizado -->
+        <Card hover>
+          <div class="w-12 h-12 rounded bg-primary/10 flex items-center justify-center mb-4" aria-hidden="true">
+            <div class="w-5 h-5 rounded-full bg-primary/40"></div>
+          </div>
+          <h3 class="font-display text-lg text-ink mb-2">Diseño personalizado</h3>
+          <p class="text-muted text-sm leading-relaxed">
+            Trabajamos con arquitectos y propietarios para adaptar cada proyecto. Planos,
+            cálculo estructural y asesoría técnica incluidos.
+          </p>
+        </Card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Catálogo de productos: fondo bg-bg -->
+  <section class="bg-bg py-16 lg:py-24">
+    <div class="container mx-auto px-4">
+      <SectionHeader
+        eyebrow="Nuestros productos"
+        title="Paneles y casas para cada proyecto"
+        description="Explora nuestro catálogo de soluciones constructivas. Desde paneles de aislamiento hasta proyectos llave en mano."
+      />
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Tarjeta catálogo: Paneles SIP -->
+        <Card hover>
+          <!-- Placeholder visual cálido -->
+          <div class="w-full aspect-[16/9] rounded bg-primary/10 mb-5" aria-hidden="true">
+            <div class="h-full flex items-end p-4">
+              <div class="flex flex-col gap-1.5 w-2/3">
+                <div class="h-1.5 rounded-full bg-primary/30"></div>
+                <div class="h-1.5 rounded-full bg-primary/20 w-3/4"></div>
+              </div>
+            </div>
+          </div>
+          <h3 class="font-display text-xl text-ink mb-2">Paneles SIP</h3>
+          <p class="text-muted text-sm leading-relaxed mb-4">
+            Sistemas de paneles estructurales aislados en distintos espesores. Ideales para
+            muros, techos y pisos de construcciones residenciales y comerciales.
+          </p>
+          <Button href="/paneles" variant="secondary" size="sm">Ver catálogo de paneles</Button>
+        </Card>
+
+        <!-- Tarjeta catálogo: Casas prefabricadas -->
+        <Card hover>
+          <div class="w-full aspect-[16/9] rounded bg-secondary/10 mb-5" aria-hidden="true">
+            <div class="h-full flex items-end p-4">
+              <div class="flex flex-col gap-1.5 w-2/3">
+                <div class="h-1.5 rounded-full bg-secondary/30"></div>
+                <div class="h-1.5 rounded-full bg-secondary/20 w-3/4"></div>
+              </div>
+            </div>
+          </div>
+          <h3 class="font-display text-xl text-ink mb-2">Casas prefabricadas</h3>
+          <p class="text-muted text-sm leading-relaxed mb-4">
+            Modelos listos para construir o proyectos a medida. Desde tiny houses hasta
+            viviendas de 120 m² con terminaciones de primer nivel.
+          </p>
+          <Button href="/casas" variant="secondary" size="sm">Ver catálogo de casas</Button>
+        </Card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Banda de llamado a la acción: fondo cálido derivado -->
+  <section class="bg-surface py-16 lg:py-24">
+    <div class="container mx-auto px-4">
+      <div class="rounded bg-primary/10 px-8 py-12 text-center flex flex-col items-center gap-6">
+        <SectionHeader
+          eyebrow="¿Listo para empezar?"
+          title="Conversemos sobre tu proyecto"
+          description="Nuestro equipo responde en menos de 24 horas. Sin compromiso, con asesoría real."
+          align="center"
+          class="mb-0"
+        />
+        <Button href="/contacto" size="lg">Solicitar cotización gratuita</Button>
+      </div>
+    </div>
   </section>
 </Layout>
