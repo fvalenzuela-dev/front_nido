@@ -166,7 +166,7 @@ const currentPath = Astro.url.pathname
           <!-- Columna 1: Marca -->
           <div>
             <p class="font-display text-xl mb-2">Nido</p>
-            <p class="text-muted text-sm leading-relaxed">
+            <p class="text-bg/70 text-sm leading-relaxed">
               Construcción sustentable con paneles SIP y casas prefabricadas de alta calidad.
             </p>
           </div>
@@ -177,7 +177,7 @@ const currentPath = Astro.url.pathname
             <ul class="flex flex-col gap-2">
               {navLinks.map(({ href, label }) => (
                 <li>
-                  <a href={href} class="text-sm text-muted hover:text-bg transition-colors">
+                  <a href={href} class="text-sm text-bg/70 hover:text-bg transition-colors">
                     {label}
                   </a>
                 </li>
@@ -188,7 +188,7 @@ const currentPath = Astro.url.pathname
           <!-- Columna 3: Contacto -->
           <div>
             <p class="font-semibold text-sm uppercase tracking-wide mb-4 text-bg/70">Contacto</p>
-            <ul class="flex flex-col gap-2 text-sm text-muted">
+            <ul class="flex flex-col gap-2 text-sm text-bg/70">
               <li>contacto@nido.cl</li>
               <li>+56 9 0000 0000</li>
               <li>Santiago, Chile</li>
@@ -197,7 +197,7 @@ const currentPath = Astro.url.pathname
         </div>
 
         <div class="border-t border-bg/10 mt-10 pt-6 text-center">
-          <p class="text-muted text-xs">&copy; {new Date().getFullYear()} Nido. Todos los derechos reservados.</p>
+          <p class="text-bg/50 text-xs">&copy; {new Date().getFullYear()} Nido. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

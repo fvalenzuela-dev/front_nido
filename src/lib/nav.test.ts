@@ -34,4 +34,9 @@ describe('isActivePath — helper de enlace activo', () => {
   it('returns false for /contacto when href is /casas', () => {
     expect(isActivePath('/contacto', '/casas')).toBe(false)
   })
+
+  it('does NOT prefix-match across a segment boundary', () => {
+    // '/paneles-sip' must not activate the '/paneles' link
+    expect(isActivePath('/paneles-sip', '/paneles')).toBe(false)
+  })
 })
