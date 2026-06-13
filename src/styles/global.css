@@ -18,3 +18,26 @@
   --font-body: "Inter", sans-serif; /* cuerpo de texto */
   --radius: 8px; /* radio por defecto del proyecto */
 }
+
+/*
+ * Modo oscuro — activado por la clase `.dark` en <html> (no solo por la
+ * preferencia del sistema). Esta variante permite, si hiciera falta, escribir
+ * utilidades como `dark:...` en el markup.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Paleta oscura cálida: redefine los mismos tokens de marca cuando <html>
+ * tiene la clase `.dark`. Como custom properties se heredan, todo el markup
+ * existente (bg-bg, text-ink, text-primary, ...) se adapta sin cambios.
+ * Mantiene el tono cálido y sustentable; los acentos se aclaran para
+ * conservar buen contraste sobre fondo oscuro.
+ */
+.dark {
+  --color-bg: #1a150e; /* café muy oscuro — fondo general */
+  --color-surface: #2c2416; /* marrón oscuro — tarjetas y paneles */
+  --color-ink: #f5f0e8; /* crema — texto principal */
+  --color-muted: #b5a88e; /* arena apagada — texto secundario */
+  --color-primary: #6fa882; /* musgo más claro — acción principal */
+  --color-secondary: #c9a24b; /* dorado — acentos */
+}

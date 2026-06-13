@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css'
+import ThemeScript from '../components/ui/ThemeScript.astro'
+import ThemeToggle from '../components/ui/ThemeToggle.astro'
 
 interface Props {
   title: string
@@ -13,6 +15,7 @@ const { title } = Astro.props
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <ThemeScript />
     <title>{title}</title>
     <meta property="og:title" content={title} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -48,6 +51,9 @@ const { title } = Astro.props
             <a href="/admin" class="text-primary hover:text-secondary transition-colors text-sm font-semibold">
               Admin
             </a>
+          </li>
+          <li class="flex items-center">
+            <ThemeToggle />
           </li>
         </ul>
       </div>
