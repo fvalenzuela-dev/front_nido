@@ -4,6 +4,10 @@ exclude_paths:
   - env.example
   - pnpm-lock.yaml
   - src/env.d.ts
+  # Codacy's Stylelint analyzer still reports the upstream
+  # `scss_function-disallowed-list` warning for this Tailwind v4 entry file.
+  # The CSS source is already clean, so keep this file out of Codacy analysis.
+  - src/styles/global.css
   - astro.config.mjs
   - vitest.config.ts
   - tailwind.config.mjs

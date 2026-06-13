@@ -391,43 +391,56 @@ export function removeFromCart(id: string) {
 
 ## 12. Diseño visual — identidad de marca
 
-### Instalación
+### Instalación (Tailwind v4 — CSS-first)
+
+El proyecto usa **Tailwind CSS v4** con el plugin oficial de Vite. No usa
+`@astrojs/tailwind` (esa integración es de v3) ni `tailwind.config.mjs`.
 
 ```bash
-npx astro add tailwind
+pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
-Esto crea `tailwind.config.mjs` automáticamente. No configurar manualmente.
-
-### `tailwind.config.mjs` — configuración del proyecto
+Configuración en `astro.config.mjs` — el plugin va en `vite.plugins`, no en
+`integrations`:
 
 ```javascript
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    './src/**/*.{astro,html,js,jsx,ts,tsx}',  // incluir TODAS las extensiones
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary:   '#4A7C59',  // verde musgo — botones, links, acción principal
-        secondary: '#8B6914',  // ocre — acentos y highlights
-        bg:        '#F5F0E8',  // crema — fondo general
-        surface:   '#FFFFFF',  // blanco — tarjetas y paneles
-        ink:       '#2C2416',  // marrón oscuro — texto principal
-        muted:     '#6B5E4E',  // marrón medio — texto secundario
-      },
-      fontFamily: {
-        display: ['"Playfair Display"', 'serif'],  // títulos grandes
-        body:    ['Inter', 'sans-serif'],           // cuerpo de texto
-      },
-      borderRadius: {
-        DEFAULT: '8px',
-      },
-    },
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  // ...
+  vite: {
+    plugins: [tailwindcss()],
   },
+})
+```
+
+### `src/styles/global.css` — tokens del proyecto
+
+En v4 la configuración es CSS-first: los tokens viven en un bloque `@theme`
+dentro del CSS global, y ese CSS se importa desde los layouts
+(`import '../styles/global.css'` en `Layout.astro` y `AdminLayout.astro`).
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #4a7c59;   /* verde musgo — acción principal */
+  --color-secondary: #8b6914; /* ocre — acentos */
+  --color-bg: #f5f0e8;        /* crema — fondo general */
+  --color-surface: #ffffff;   /* blanco — tarjetas y paneles */
+  --color-ink: #2c2416;       /* marrón oscuro — texto principal */
+  --color-muted: #6b5e4e;     /* marrón medio — texto secundario */
+
+  --font-display: "Playfair Display", serif; /* títulos grandes */
+  --font-body: Inter, sans-serif;            /* cuerpo de texto */
+
+  --radius: 8px;              /* radio por defecto (clase `rounded`) */
 }
 ```
+
+Cada `--color-*` genera automáticamente sus utilidades (`bg-primary`,
+`text-ink`, `border-bg`, etc.), `--font-*` genera `font-display` / `font-body`,
+y `--radius` define el valor de la clase `rounded`.
 
 ### Uso en componentes
 
@@ -465,9 +478,10 @@ export function ProductCard() {
 **Tono:** cálido, sustentable, artesanal pero profesional. Sin efectos neón,
 sin gradientes artificiales, sin sombras excesivas.
 
-**Regla crítica:** el campo `content` en `tailwind.config.mjs` debe incluir
-`.astro`, `.tsx` y `.jsx`. Si falta alguna extensión, las clases de esos
-archivos no se generan y los estilos no aparecen en producción.
+**Regla crítica (v4):** Tailwind v4 detecta automáticamente las clases usadas
+en el proyecto (no hay campo `content` que mantener). Lo que sí es obligatorio:
+el CSS global (`src/styles/global.css`) debe importarse desde **todos** los
+layouts. Si un layout no lo importa, sus páginas se renderizan sin estilos.
 
 ---
 
@@ -475,8 +489,8 @@ archivos no se generan y los estilos no aparecen en producción.
 
 ```bash
 # Setup inicial — solo una vez
-npx astro add tailwind          # instala @astrojs/tailwind y configura automáticamente
-npx astro add react             # instala @astrojs/react
+pnpm add -D tailwindcss @tailwindcss/vite   # Tailwind v4 (plugin de Vite, sin @astrojs/tailwind)
+npx astro add react                         # instala @astrojs/react
 
 # Desarrollo
 npm run dev
