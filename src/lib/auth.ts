@@ -162,6 +162,34 @@ export type AuthGateDecision =
   | { action: 'redirect-to-login' }
   | { action: 'set-cookies-and-allow'; accessToken: string; refreshToken: string }
 
+async function canAllowWithAccessToken(accessToken: string, deps: AuthGateDeps): Promise<boolean> {
+  try {
+    const { user, error } = await deps.getUser(accessToken)
+    return !error && !!user
+  } catch {
+    return false
+  }
+}
+
+async function refreshAuthSession(
+  refreshToken: string,
+  deps: AuthGateDeps
+): Promise<AuthGateDecision> {
+  try {
+    const refreshResult = await deps.refreshSession(refreshToken)
+    if (!refreshResult.error && refreshResult.session) {
+      return {
+        action: 'set-cookies-and-allow',
+        accessToken: refreshResult.session.access_token,
+        refreshToken: refreshResult.session.refresh_token,
+      }
+    }
+    return { action: 'redirect-to-login' }
+  } catch {
+    return { action: 'redirect-to-login' }
+  }
+}
+
 export async function resolveAuthGate(
   state: AuthGateState,
   deps: AuthGateDeps
@@ -177,34 +205,14 @@ export async function resolveAuthGate(
   }
 
   // Step 3: if we have an access token, try to validate it first
-  if (state.accessToken) {
-    try {
-      const { user, error } = await deps.getUser(state.accessToken)
-      if (!error && user) {
-        return { action: 'allow' }
-      }
-      // getUser failed — fall through to refresh attempt (step 4)
-    } catch {
-      // getUser threw — fall through to refresh attempt
-    }
+  if (state.accessToken && (await canAllowWithAccessToken(state.accessToken, deps))) {
+    return { action: 'allow' }
   }
 
   // Step 4: access token absent, expired, or invalid — attempt exactly ONE refresh
   // (covers WARNING-3: previously we redirected when accessToken was absent even
   //  if refreshToken was present; now we always attempt the refresh)
-  try {
-    const refreshResult = await deps.refreshSession(state.refreshToken)
-    if (!refreshResult.error && refreshResult.session) {
-      return {
-        action: 'set-cookies-and-allow',
-        accessToken: refreshResult.session.access_token,
-        refreshToken: refreshResult.session.refresh_token,
-      }
-    }
-    return { action: 'redirect-to-login' }
-  } catch {
-    return { action: 'redirect-to-login' }
-  }
+  return refreshAuthSession(state.refreshToken, deps)
 }
 
 // ---------------------------------------------------------------------------
