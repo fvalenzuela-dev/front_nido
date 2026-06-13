@@ -1,16 +1,123 @@
 ---
 import Layout from '@/layouts/Layout.astro'
+import SectionHeader from '@/components/ui/SectionHeader.astro'
+import Card from '@/components/ui/Card.astro'
+import Button from '@/components/ui/Button.astro'
 ---
 
 <Layout title="Cotización — Nido">
-  <section class="container mx-auto px-4 py-16 max-w-2xl">
-    <h1 class="font-display text-4xl text-ink mb-4">Cotización</h1>
-    <p class="text-muted mb-8">
-      Completa el formulario y nos ponemos en contacto a la brevedad.
-    </p>
-    <!-- Contact form placeholder — implemented in forms phase -->
-    <div class="bg-surface rounded p-8 border border-bg/50">
-      <p class="text-muted text-sm">Formulario de cotización próximamente</p>
+  <section class="bg-bg">
+    <div class="container mx-auto px-4 py-16 max-w-2xl">
+      <h1 class="sr-only">Solicitar una cotización</h1>
+      <SectionHeader
+        eyebrow="Contacto"
+        title="Solicita una cotización"
+        description="Completa el formulario y nuestro equipo se pondrá en contacto contigo a la brevedad para asesorarte."
+      />
+
+      <Card>
+        <form method="POST" action="#" class="space-y-5">
+          <!-- Nombre -->
+          <div>
+            <label for="nombre" class="block text-sm font-body font-medium text-ink mb-1">
+              Nombre completo <span class="text-primary" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="nombre"
+              type="text"
+              name="nombre"
+              required
+              autocomplete="name"
+              aria-required="true"
+              class="w-full px-3 py-2 border border-border rounded bg-bg text-ink font-body text-sm
+                     focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/50"
+            />
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-body font-medium text-ink mb-1">
+              Correo electrónico <span class="text-primary" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              required
+              autocomplete="email"
+              aria-required="true"
+              class="w-full px-3 py-2 border border-border rounded bg-bg text-ink font-body text-sm
+                     focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/50"
+            />
+          </div>
+
+          <!-- Teléfono -->
+          <div>
+            <label for="telefono" class="block text-sm font-body font-medium text-ink mb-1">
+              Teléfono <span class="text-muted font-normal">(opcional)</span>
+            </label>
+            <input
+              id="telefono"
+              type="tel"
+              name="telefono"
+              autocomplete="tel"
+              class="w-full px-3 py-2 border border-border rounded bg-bg text-ink font-body text-sm
+                     focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/50"
+            />
+          </div>
+
+          <!-- Tipo de consulta -->
+          <div>
+            <label for="tipo" class="block text-sm font-body font-medium text-ink mb-1">
+              Tipo de consulta <span class="text-primary" aria-hidden="true">*</span>
+            </label>
+            <select
+              id="tipo"
+              name="tipo"
+              required
+              aria-required="true"
+              class="w-full px-3 py-2 border border-border rounded bg-bg text-ink font-body text-sm
+                     focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/50"
+            >
+              <option value="" disabled selected>Selecciona una opción</option>
+              <option value="panel">Paneles SIP</option>
+              <option value="casa">Casas prefabricadas</option>
+              <option value="general">Consulta general</option>
+            </select>
+          </div>
+
+          <!-- Mensaje -->
+          <div>
+            <label for="mensaje" class="block text-sm font-body font-medium text-ink mb-1">
+              Mensaje <span class="text-primary" aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="mensaje"
+              name="mensaje"
+              required
+              rows="5"
+              aria-required="true"
+              aria-describedby="mensaje-hint"
+              class="w-full px-3 py-2 border border-border rounded bg-bg text-ink font-body text-sm
+                     focus:outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/50
+                     resize-y min-h-[120px]"
+            ></textarea>
+            <p id="mensaje-hint" class="mt-1 text-xs text-muted">
+              Incluye detalles sobre tu proyecto para que podamos asesorarte mejor.
+            </p>
+          </div>
+
+          <!-- Botón de envío -->
+          <div class="pt-2">
+            <Button type="submit" variant="primary" size="lg" class="w-full">
+              Enviar cotización
+            </Button>
+            <p class="mt-2 text-xs text-muted text-center">
+              El envío del formulario estará disponible próximamente.
+            </p>
+          </div>
+        </form>
+      </Card>
     </div>
   </section>
 </Layout>
