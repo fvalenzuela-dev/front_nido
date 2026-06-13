@@ -1,6 +1,4 @@
-/* stylelint-disable import-notation */
-@import "tailwindcss";
-/* stylelint-enable import-notation */
+@import url("tailwindcss");
 
 /*
  * Tokens de marca — Catálogo SIP & Casas Prefabricadas
