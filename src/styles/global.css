@@ -1,5 +1,6 @@
-/* stylelint-disable-next-line import-notation -- Tailwind v4 requires the plain import form */
+/* stylelint-disable import-notation */
 @import "tailwindcss";
+/* stylelint-enable import-notation */
 
 /*
  * Tokens de marca — Catálogo SIP & Casas Prefabricadas
