@@ -1,0 +1,26 @@
+---
+/*
+ * Aplica el tema ANTES de pintar la página para evitar el parpadeo (FOUC).
+ * Debe ir lo más arriba posible en el <head>.
+ *
+ * `is:inline` es obligatorio: el script corre de inmediato y no puede depender
+ * de imports diferidos, por eso la lógica de resolución se duplica aquí en su
+ * forma mínima (la versión testeada vive en src/lib/theme.ts → resolveInitialTheme).
+ */
+---
+
+<script is:inline>
+  ;(function () {
+    try {
+      const stored = localStorage.getItem('theme')
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      const theme =
+        stored === 'light' || stored === 'dark' ? stored : systemDark ? 'dark' : 'light'
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark')
+      }
+    } catch (_) {
+      /* localStorage puede no estar disponible; se ignora y queda en claro */
+    }
+  })()
+</script>

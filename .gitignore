@@ -1,2 +1,27 @@
-# Local Pi runtime state
+# Gentle AI runtime
 .atl/
+
+# Dependencias
+node_modules/
+
+# Build outputs
+dist/
+.vercel/
+
+# Astro cache
+.astro/
+
+# Variables de entorno (nunca commitear)
+.env
+.env.local
+.env.*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
