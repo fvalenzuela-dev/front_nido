@@ -475,8 +475,29 @@ export function ProductCard() {
 | `text-ink` | `#2C2416` Marrón oscuro | Texto principal |
 | `text-muted` | `#6B5E4E` Marrón medio | Texto secundario |
 
+### Modo oscuro (claro/oscuro)
+
+El tema se controla con la clase `.dark` en `<html>`. En `global.css`, la clase
+`.dark` **redefine los mismos tokens** (`--color-bg`, `--color-ink`, etc.) con
+una paleta oscura cálida, así que todo el markup que usa `bg-bg`, `text-ink`,
+`text-primary`… se adapta solo, sin clases `dark:` repartidas por las páginas.
+
+| Token | Claro | Oscuro |
+|---|---|---|
+| `bg` | `#F5F0E8` | `#1A150E` café muy oscuro |
+| `surface` | `#FFFFFF` | `#2C2416` marrón oscuro |
+| `ink` | `#2C2416` | `#F5F0E8` crema |
+| `muted` | `#6B5E4E` | `#B5A88E` arena apagada |
+| `primary` | `#4A7C59` | `#6FA882` musgo claro |
+| `secondary` | `#8B6914` | `#C9A24B` dorado |
+
+Piezas: `ThemeScript.astro` (aplica el tema en el `<head>` antes del paint,
+evita parpadeo), `ThemeToggle.astro` (botón sol/luna en el navbar público) y
+`src/lib/theme.ts` (lógica pura testeada). La preferencia se guarda en
+`localStorage` con clave `theme`; sin preferencia, se usa la del sistema.
+
 **Tono:** cálido, sustentable, artesanal pero profesional. Sin efectos neón,
-sin gradientes artificiales, sin sombras excesivas.
+sin gradientes artificiales, sin sombras excesivas. Esto aplica a **ambos** modos.
 
 **Regla crítica (v4):** Tailwind v4 detecta automáticamente las clases usadas
 en el proyecto (no hay campo `content` que mantener). Lo que sí es obligatorio:
