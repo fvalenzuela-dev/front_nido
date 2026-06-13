@@ -7,7 +7,9 @@ import {
   buildSignOutCookies,
   sanitizeAuthError,
   signIn,
+  resolveAuthGate,
 } from './auth'
+import type { AuthGateDeps } from './auth'
 
 // ---------------------------------------------------------------------------
 // Stub Supabase client helpers (no vi.mock — injectable pattern)
@@ -204,5 +206,136 @@ describe('signIn', () => {
     const result = await signIn('user@example.com', 'pass', throwClient)
     expect(result.session).toBeNull()
     expect(result.error).toBe('invalid_credentials')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// resolveAuthGate
+// Pure helper that encapsulates all middleware branching logic.
+// Receives auth state + injectable async ops; returns a decision (no I/O).
+// ---------------------------------------------------------------------------
+
+// Stub helpers for resolveAuthGate tests
+
+function makeGetUser(
+  result: { user: object | null; error: { message: string } | null }
+): AuthGateDeps['getUser'] {
+  return (_token: string) => Promise.resolve(result)
+}
+
+function makeRefreshSession(
+  result:
+    | { session: { access_token: string; refresh_token: string }; error: null }
+    | { session: null; error: { message: string } }
+): AuthGateDeps['refreshSession'] {
+  return (_token: string) => Promise.resolve(result)
+}
+
+const validUser = { id: 'user-1', email: 'a@b.com' }
+const newTokens = { access_token: 'new-access', refresh_token: 'new-refresh' }
+
+describe('resolveAuthGate', () => {
+  // Scenario 1: skipAuth flag bypasses everything
+  it('skipAuth=true → allow without calling getUser or refreshSession', async () => {
+    let getUserCalled = false
+    let refreshCalled = false
+
+    const deps: AuthGateDeps = {
+      getUser: (_t) => { getUserCalled = true; return Promise.resolve({ user: null, error: { message: 'should not be called' } }) },
+      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, error: { message: 'should not be called' } }) },
+    }
+
+    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: undefined, skipAuth: true }, deps)
+    expect(result.action).toBe('allow')
+    expect(getUserCalled).toBe(false)
+    expect(refreshCalled).toBe(false)
+  })
+
+  // Scenario 2: valid access token → allow
+  it('valid access token (getUser succeeds) → allow, no refresh attempted', async () => {
+    let refreshCalled = false
+
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: validUser, error: null }),
+      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, error: { message: 'should not be called' } }) },
+    }
+
+    const result = await resolveAuthGate({ accessToken: 'valid-access', refreshToken: 'some-refresh', skipAuth: false }, deps)
+    expect(result.action).toBe('allow')
+    expect(refreshCalled).toBe(false)
+  })
+
+  // Scenario 3: both tokens absent → redirect-to-login (no getUser or refresh)
+  it('both tokens absent → redirect-to-login without calling getUser or refreshSession', async () => {
+    let getUserCalled = false
+    let refreshCalled = false
+
+    const deps: AuthGateDeps = {
+      getUser: (_t) => { getUserCalled = true; return Promise.resolve({ user: null, error: { message: 'noop' } }) },
+      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, error: { message: 'noop' } }) },
+    }
+
+    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: undefined, skipAuth: false }, deps)
+    expect(result.action).toBe('redirect-to-login')
+    expect(getUserCalled).toBe(false)
+    expect(refreshCalled).toBe(false)
+  })
+
+  // Scenario 4: access token absent/expired + valid refresh → set-cookies-and-allow
+  it('access token absent, valid refresh token → attempt refresh, set-cookies-and-allow', async () => {
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: null, error: { message: 'Invalid token' } }),
+      refreshSession: makeRefreshSession({ session: newTokens, error: null }),
+    }
+
+    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: 'valid-refresh', skipAuth: false }, deps)
+    expect(result.action).toBe('set-cookies-and-allow')
+    if (result.action === 'set-cookies-and-allow') {
+      expect(result.accessToken).toBe(newTokens.access_token)
+      expect(result.refreshToken).toBe(newTokens.refresh_token)
+    }
+  })
+
+  // Scenario 4b: access token expired (getUser fails) + valid refresh → set-cookies-and-allow
+  it('access token expired (getUser fails), valid refresh token → one refresh, set-cookies-and-allow', async () => {
+    let refreshCallCount = 0
+
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: null, error: { message: 'JWT expired' } }),
+      refreshSession: (_t) => {
+        refreshCallCount++
+        return Promise.resolve({ session: newTokens, error: null })
+      },
+    }
+
+    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'valid-refresh', skipAuth: false }, deps)
+    expect(result.action).toBe('set-cookies-and-allow')
+    expect(refreshCallCount).toBe(1) // exactly ONE refresh attempt
+    if (result.action === 'set-cookies-and-allow') {
+      expect(result.accessToken).toBe(newTokens.access_token)
+      expect(result.refreshToken).toBe(newTokens.refresh_token)
+    }
+  })
+
+  // Scenario 5: expired access + invalid refresh → redirect-to-login
+  it('expired access token + invalid refresh token → redirect-to-login', async () => {
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: null, error: { message: 'JWT expired' } }),
+      refreshSession: makeRefreshSession({ session: null, error: { message: 'Refresh token expired' } }),
+    }
+
+    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'invalid-refresh', skipAuth: false }, deps)
+    expect(result.action).toBe('redirect-to-login')
+  })
+
+  // Scenario 6: refresh throws → redirect-to-login (does not propagate error)
+  it('refreshSession throws → redirect-to-login, does not throw', async () => {
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: null, error: { message: 'JWT expired' } }),
+      refreshSession: (_t) => Promise.reject(new Error('network failure')),
+    }
+
+    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'valid-refresh', skipAuth: false }, deps)
+    expect(result.action).toBe('redirect-to-login')
   })
 })
