@@ -2,19 +2,18 @@
 import '../styles/global.css'
 import ThemeScript from '../components/ui/ThemeScript.astro'
 import ThemeToggle from '../components/ui/ThemeToggle.astro'
-import { isActivePath } from '../lib/nav'
+import {
+  isActivePath,
+  primaryNavLinks,
+  quoteCta,
+  footerNavLinks,
+} from '../lib/nav'
 
 interface Props {
   title: string
 }
 
 const { title } = Astro.props
-
-const navLinks = [
-  { href: '/paneles', label: 'Paneles SIP' },
-  { href: '/casas', label: 'Casas' },
-  { href: '/contacto', label: 'Contacto' },
-]
 
 const currentPath = Astro.url.pathname
 ---
@@ -36,39 +35,57 @@ const currentPath = Astro.url.pathname
   </head>
   <body class="bg-bg text-ink font-body">
     <!-- Barra de navegación -->
-    <nav class="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50">
-      <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+    <nav class="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50" aria-label="Navegación principal">
+      <div class="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         <!-- Marca Nido -->
-        <a href="/" class="font-display text-xl text-ink hover:text-primary transition-colors" aria-label="Nido — inicio">
+        <a
+          href="/"
+          class="font-display text-xl text-ink hover:text-primary transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+          aria-label="Nido — inicio"
+        >
           Nido
         </a>
 
         <!-- Navegación de escritorio -->
         <ul class="hidden md:flex gap-6 items-center">
-          {navLinks.map(({ href, label }) => (
-            <li>
-              <a
-                href={href}
-                class={
-                  isActivePath(currentPath, href)
-                    ? 'text-primary border-b-2 border-primary text-sm font-medium pb-0.5 transition-colors'
-                    : 'text-ink hover:text-primary text-sm font-medium transition-colors'
-                }
-              >
-                {label}
-              </a>
-            </li>
-          ))}
+          {primaryNavLinks.map(({ href, label }) => {
+            const active = isActivePath(currentPath, href)
+            return (
+              <li>
+                <a
+                  href={href}
+                  aria-current={active ? 'page' : undefined}
+                  class={
+                    (active
+                      ? 'text-primary border-b-2 border-primary pb-0.5'
+                      : 'text-ink hover:text-primary border-b-2 border-transparent pb-0.5') +
+                    ' text-sm font-medium transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
+                  }
+                >
+                  {label}
+                </a>
+              </li>
+            )
+          })}
+          <li class="flex items-center">
+            <ThemeToggle />
+          </li>
           <li>
             <a
               href="/admin"
-              class="text-primary hover:text-secondary text-sm font-semibold transition-colors"
+              class="text-muted hover:text-primary text-sm font-medium transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
             >
               Admin
             </a>
           </li>
-          <li class="flex items-center">
-            <ThemeToggle />
+          <li>
+            <a
+              href={quoteCta.href}
+              aria-current={isActivePath(currentPath, quoteCta.href) ? 'page' : undefined}
+              class="inline-flex items-center justify-center rounded bg-primary text-surface px-5 py-2 text-sm font-medium transition-all duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+            >
+              {quoteCta.label}
+            </a>
           </li>
         </ul>
 
@@ -125,29 +142,44 @@ const currentPath = Astro.url.pathname
 
       <!-- Menú móvil -->
       <div id="mobile-menu" hidden class="md:hidden border-t border-border bg-surface">
-        <ul class="container mx-auto px-4 py-4 flex flex-col gap-4">
-          {navLinks.map(({ href, label }) => (
-            <li>
-              <a
-                href={href}
-                class={
-                  isActivePath(currentPath, href)
-                    ? 'block text-primary font-medium text-sm border-l-2 border-primary pl-3'
-                    : 'block text-ink hover:text-primary font-medium text-sm pl-3 transition-colors'
-                }
-                data-mobile-link
-              >
-                {label}
-              </a>
-            </li>
-          ))}
+        <ul class="container mx-auto px-4 py-4 flex flex-col gap-1">
+          {primaryNavLinks.map(({ href, label }) => {
+            const active = isActivePath(currentPath, href)
+            return (
+              <li>
+                <a
+                  href={href}
+                  aria-current={active ? 'page' : undefined}
+                  class={
+                    (active
+                      ? 'text-primary border-primary'
+                      : 'text-ink hover:text-primary border-transparent') +
+                    ' block font-medium text-sm border-l-2 pl-3 py-2 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
+                  }
+                  data-mobile-link
+                >
+                  {label}
+                </a>
+              </li>
+            )
+          })}
           <li>
             <a
               href="/admin"
-              class="block text-primary hover:text-secondary font-semibold text-sm pl-3 transition-colors"
+              class="block text-muted hover:text-primary font-medium text-sm border-l-2 border-transparent pl-3 py-2 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               data-mobile-link
             >
               Admin
+            </a>
+          </li>
+          <li class="pt-3">
+            <a
+              href={quoteCta.href}
+              aria-current={isActivePath(currentPath, quoteCta.href) ? 'page' : undefined}
+              class="block text-center rounded bg-primary text-surface px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+              data-mobile-link
+            >
+              {quoteCta.label}
             </a>
           </li>
         </ul>
@@ -175,9 +207,12 @@ const currentPath = Astro.url.pathname
           <div>
             <p class="font-semibold text-sm uppercase tracking-wide mb-4 text-bg/70">Navegación</p>
             <ul class="flex flex-col gap-2">
-              {navLinks.map(({ href, label }) => (
+              {footerNavLinks.map(({ href, label }) => (
                 <li>
-                  <a href={href} class="text-sm text-bg/70 hover:text-bg transition-colors">
+                  <a
+                    href={href}
+                    class="text-sm text-bg/70 hover:text-bg transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg/40"
+                  >
                     {label}
                   </a>
                 </li>
@@ -228,9 +263,12 @@ const currentPath = Astro.url.pathname
         iconClose.style.display = 'none'
       }
 
+      function isMenuOpen(): boolean {
+        return navToggle?.getAttribute('aria-expanded') === 'true'
+      }
+
       navToggle?.addEventListener('click', () => {
-        const isOpen = navToggle.getAttribute('aria-expanded') === 'true'
-        if (isOpen) {
+        if (isMenuOpen()) {
           closeMenu()
         } else {
           openMenu()
@@ -239,6 +277,24 @@ const currentPath = Astro.url.pathname
 
       mobileLinks.forEach((link) => {
         link.addEventListener('click', closeMenu)
+      })
+
+      // Cierra con Escape y devuelve el foco al botón que abrió el menú.
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && isMenuOpen()) {
+          closeMenu()
+          navToggle?.focus()
+        }
+      })
+
+      // Cierra al tocar fuera de la barra de navegación.
+      document.addEventListener('click', (event) => {
+        if (!isMenuOpen()) return
+        const target = event.target as Node | null
+        const nav = navToggle?.closest('nav')
+        if (nav && target && !nav.contains(target)) {
+          closeMenu()
+        }
       })
     </script>
   </body>
