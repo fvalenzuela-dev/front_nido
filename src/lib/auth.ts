@@ -1,5 +1,6 @@
 import type { Database } from '@/types/supabase'
 import type { SupabaseClient, Session } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 // ---------------------------------------------------------------------------
 // Auth error codes (whitelisted — only these may appear in ?error= params)
@@ -125,12 +126,10 @@ export async function signIn(
 // ---------------------------------------------------------------------------
 
 export async function getSession(accessToken: string) {
-  const { getSupabaseAdmin } = await import('@/lib/supabase')
   const { data, error } = await getSupabaseAdmin().auth.getUser(accessToken)
   return { user: data.user, error }
 }
 
 export async function signOut(accessToken: string) {
-  const { getSupabaseAdmin } = await import('@/lib/supabase')
   return getSupabaseAdmin().auth.admin.signOut(accessToken)
 }
