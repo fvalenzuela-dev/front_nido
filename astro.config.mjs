@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
-import tailwind from '@astrojs/tailwind'
+import tailwindcss from '@tailwindcss/vite'
 import vercel from '@astrojs/vercel'
 
 export default defineConfig({
@@ -8,8 +8,10 @@ export default defineConfig({
   adapter: vercel(),
   integrations: [
     react(),
-    tailwind(),
   ],
+  vite: {
+    plugins: [tailwindcss()],
+  },
   image: {
     domains: ['TU_PROYECTO.supabase.co'],
   },

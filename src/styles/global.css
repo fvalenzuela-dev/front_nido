@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de marca — Catálogo SIP & Casas Prefabricadas
+ * Tailwind v4 lee estas variables y genera las utilidades:
+ *   --color-primary  -> bg-primary, text-primary, border-primary, ...
+ *   --font-display   -> font-display
+ * Mantener alineado con CLAUDE.md §12.
+ */
+@theme {
+  --color-primary: #4a7c59; /* verde musgo — acción principal */
+  --color-secondary: #8b6914; /* ocre — acentos */
+  --color-bg: #f5f0e8; /* crema — fondo general */
+  --color-surface: #ffffff; /* blanco — tarjetas y paneles */
+  --color-ink: #2c2416; /* marrón oscuro — texto principal */
+  --color-muted: #6b5e4e; /* marrón medio — texto secundario */
+
+  --font-display: "Playfair Display", serif; /* títulos grandes */
+  --font-body: Inter, sans-serif; /* cuerpo de texto */
+
+  --radius: 8px; /* radio por defecto del proyecto */
+}
