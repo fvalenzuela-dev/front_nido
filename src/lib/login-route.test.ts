@@ -215,15 +215,14 @@ describe('handleLoginPost', () => {
     const cookies = makeCookieStub()
     const redirect = makeRedirectStub()
 
-    const throwingSignIn = (): Promise<never> =>
-      Promise.reject(new Error('unexpected signIn failure'))
-
     const res = await handleLoginPost(
       { request: makeFormRequest('user@example.com', 'pass'), cookies, redirect },
       {
         getClient: () => throwingClient,
         isProduction: false,
-        signIn: throwingSignIn as typeof signIn,
+        signIn: () => {
+          throw new Error('unexpected signIn failure')
+        },
       },
     )
 
