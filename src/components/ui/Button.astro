@@ -1,0 +1,49 @@
+---
+import { cn } from '../../lib/cn'
+
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost'
+  size?: 'sm' | 'md' | 'lg'
+  href?: string
+  type?: 'button' | 'submit'
+  class?: string
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  href,
+  type = 'button',
+  class: className,
+} = Astro.props
+
+const base =
+  'inline-flex items-center justify-center rounded font-medium transition-all duration-200 ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
+
+const variants = {
+  primary: 'bg-primary text-surface hover:bg-primary/90',
+  secondary: 'bg-transparent border border-primary text-primary hover:bg-primary/10',
+  ghost: 'text-ink hover:bg-bg border border-border',
+}
+
+const sizes = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-5 py-2.5 text-sm',
+  lg: 'px-7 py-3 text-base',
+}
+
+const classes = cn(base, variants[variant], sizes[size], className)
+---
+
+{
+  href ? (
+    <a href={href} class={classes}>
+      <slot />
+    </a>
+  ) : (
+    <button type={type} class={classes}>
+      <slot />
+    </button>
+  )
+}
