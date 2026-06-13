@@ -1,13 +1,60 @@
 ---
+export const prerender = false
+
 import Layout from '@/layouts/Layout.astro'
+import { sanitizeAuthError } from '@/lib/auth'
+
+const errorCode = Astro.url.searchParams.get('error')
+const errorMessage = sanitizeAuthError(errorCode)
 ---
 
 <Layout title="Iniciar sesión — Nido">
   <section class="container mx-auto px-4 py-16 max-w-md">
     <h1 class="font-display text-3xl text-ink mb-6">Iniciar sesión</h1>
-    <!-- Login form placeholder — implemented in auth phase -->
+
     <div class="bg-surface rounded p-8 border border-bg/50">
-      <p class="text-muted text-sm">Formulario de acceso próximamente</p>
+      {errorMessage && (
+        <div class="mb-4 p-3 bg-secondary/10 border border-secondary/30 rounded text-sm text-ink" role="alert">
+          {errorMessage}
+        </div>
+      )}
+
+      <form method="POST" action="/api/auth/login" class="space-y-4">
+        <div>
+          <label for="email" class="block text-sm font-body text-muted mb-1">
+            Correo electrónico
+          </label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            required
+            autocomplete="email"
+            class="w-full px-3 py-2 border border-bg/50 rounded bg-bg text-ink font-body text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-body text-muted mb-1">
+            Contraseña
+          </label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            required
+            autocomplete="current-password"
+            class="w-full px-3 py-2 border border-bg/50 rounded bg-bg text-ink font-body text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-primary text-white py-2 px-4 rounded font-body text-sm hover:bg-primary/90 transition-colors"
+        >
+          Iniciar sesión
+        </button>
+      </form>
     </div>
   </section>
 </Layout>
