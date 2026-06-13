@@ -9,5 +9,5 @@ export function isActivePath(current: string, href: string): boolean {
   if (href === '/') {
     return current === '/'
   }
-  return current === href || current.startsWith(href + '/')
+  return current === href || current.startsWith(`${href}/`)
 }
