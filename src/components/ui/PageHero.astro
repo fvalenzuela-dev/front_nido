@@ -25,7 +25,7 @@ const wrapperClasses = cn(
           {eyebrow}
         </p>
       )}
-      <h1 class="font-display italic text-5xl lg:text-6xl leading-tight text-ink">
+      <h1 class="font-display italic text-4xl sm:text-5xl lg:text-6xl leading-tight text-ink hyphens-auto">
         {title}
       </h1>
       {subtitle && (
@@ -41,7 +41,7 @@ const wrapperClasses = cn(
     <!-- Columna visual: 45% — placeholder CSS cálido (solo CSS, sin etiqueta img) -->
     <div class="flex items-center justify-center">
       <slot name="media">
-        <div class="w-full aspect-[4/3] rounded bg-primary/10 flex items-end p-6">
+        <div class="w-full aspect-[4/3] rounded bg-primary/10 flex items-end p-6" aria-hidden="true">
           <div class="flex flex-col gap-2 w-full">
             <div class="h-2 rounded-full bg-primary/20 w-3/4"></div>
             <div class="h-2 rounded-full bg-secondary/20 w-1/2"></div>
