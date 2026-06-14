@@ -1,12 +1,19 @@
 import { defineMiddleware } from 'astro:middleware'
 import { getSupabaseAdmin } from '@/lib/supabase'
-import { buildCookieOptions, ACCESS_MAX_AGE, REFRESH_MAX_AGE, resolveAuthGate } from '@/lib/auth'
+import {
+  buildCookieOptions,
+  ACCESS_MAX_AGE,
+  REFRESH_MAX_AGE,
+  resolveAuthGate,
+  resolveAllowedRoles,
+} from '@/lib/auth'
 import type { AuthGateDeps } from '@/lib/auth'
 
 export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, next) => {
-  const isAdminRoute = url.pathname.startsWith('/admin')
+  // Which roles (if any) gate this route. null → public route, no auth needed.
+  const allowedRoles = resolveAllowedRoles(url.pathname)
 
-  if (!isAdminRoute) {
+  if (allowedRoles === null) {
     return next()
   }
 
@@ -25,13 +32,16 @@ export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, nex
     refreshSession: async (token) => {
       const { data, error } = await admin.auth.refreshSession({ refresh_token: token })
       if (error || !data.session) {
-        return { session: null, error: { message: error?.message ?? 'Refresh failed' } }
+        return { session: null, user: null, error: { message: error?.message ?? 'Refresh failed' } }
       }
       return {
         session: {
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
         },
+        // The refreshed session carries the user, so the role can be authorized
+        // without an extra getUser() round-trip.
+        user: data.user,
         error: null,
       }
     },
@@ -46,6 +56,7 @@ export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, nex
     {
       accessToken,
       refreshToken,
+      allowedRoles,
       // Explicit server-only dev bypass. Set SKIP_ADMIN_AUTH=true in .env for
       // local development only. NEVER set this in production or Vercel preview.
       skipAuth: import.meta.env.SKIP_ADMIN_AUTH === 'true',
@@ -55,6 +66,15 @@ export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, nex
 
   if (decision.action === 'allow') {
     return next()
+  }
+
+  // Authenticated but lacking an authorized role → 403 (not a login redirect:
+  // the user is signed in, they just don't have permission for this route).
+  if (decision.action === 'forbidden') {
+    return new Response('No tienes permiso para acceder a esta sección.', {
+      status: 403,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    })
   }
 
   if (decision.action === 'set-cookies-and-allow') {
