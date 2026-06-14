@@ -220,16 +220,32 @@ CREATE POLICY "casas publicas" ON casas_prefabricadas
 CREATE POLICY "insertar cotizacion" ON cotizaciones
   FOR INSERT WITH CHECK (true);
 
--- Admin: acceso total solo para usuarios autenticados
+-- Admin: acceso total solo para usuarios con rol 'admin' (app_metadata.role).
+-- El rol viaja en el JWT; current_app_role() lo lee sin queries extra.
+-- (ver migración 20260614123748_role_based_admin_rls.sql)
+CREATE OR REPLACE FUNCTION public.current_app_role()
+RETURNS text LANGUAGE sql STABLE AS $$
+  SELECT auth.jwt() -> 'app_metadata' ->> 'role'
+$$;
+
 CREATE POLICY "admin paneles" ON paneles_sip
-  FOR ALL USING (auth.role() = 'authenticated');
+  FOR ALL USING (public.current_app_role() = 'admin')
+  WITH CHECK (public.current_app_role() = 'admin');
 
 CREATE POLICY "admin casas" ON casas_prefabricadas
-  FOR ALL USING (auth.role() = 'authenticated');
+  FOR ALL USING (public.current_app_role() = 'admin')
+  WITH CHECK (public.current_app_role() = 'admin');
 
 CREATE POLICY "admin cotizaciones" ON cotizaciones
-  FOR ALL USING (auth.role() = 'authenticated');
+  FOR ALL USING (public.current_app_role() = 'admin')
+  WITH CHECK (public.current_app_role() = 'admin');
 ```
+
+> **Autorización por rol:** el panel admin solo admite usuarios con
+> `app_metadata.role = 'admin'`. La barrera primaria es el middleware
+> (`resolveAuthGate` + `resolveAllowedRoles`); estas políticas RLS son la
+> segunda capa para el cliente anon. Asignar el rol: ver sección 4 / Supabase
+> (`UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'`).
 
 **Si vas a crear una tabla nueva, primero muéstrame el DDL para revisarlo.**
 
