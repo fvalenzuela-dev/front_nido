@@ -8,6 +8,9 @@ import {
   sanitizeAuthError,
   signIn,
   resolveAuthGate,
+  extractRole,
+  isRoleAuthorized,
+  resolveAllowedRoles,
 } from './auth'
 import type { AuthGateDeps } from './auth'
 
@@ -225,14 +228,69 @@ function makeGetUser(
 
 function makeRefreshSession(
   result:
-    | { session: { access_token: string; refresh_token: string }; error: null }
-    | { session: null; error: { message: string } }
+    | { session: { access_token: string; refresh_token: string }; user: object | null; error: null }
+    | { session: null; user: null; error: { message: string } }
 ): AuthGateDeps['refreshSession'] {
   return (_token: string) => Promise.resolve(result)
 }
 
-const validUser = { id: 'user-1', email: 'a@b.com' }
+// Helper: wrap a role into a Supabase-shaped user object (role lives in app_metadata)
+function userWithRole(role: string | null): object {
+  return { id: 'user-1', email: 'a@b.com', app_metadata: role === null ? {} : { role } }
+}
+
+const adminUser = userWithRole('admin')
 const newTokens = { access_token: 'new-access', refresh_token: 'new-refresh' }
+const ADMIN_ONLY = ['admin'] as const
+
+describe('extractRole', () => {
+  it('reads role from app_metadata.role', () => {
+    expect(extractRole({ app_metadata: { role: 'admin' } })).toBe('admin')
+  })
+
+  it('returns null when app_metadata has no role', () => {
+    expect(extractRole({ app_metadata: {} })).toBeNull()
+  })
+
+  it('returns null when there is no app_metadata', () => {
+    expect(extractRole({ id: 'x' })).toBeNull()
+  })
+
+  it('ignores a non-string role (cannot be spoofed via odd shapes)', () => {
+    expect(extractRole({ app_metadata: { role: 123 } })).toBeNull()
+  })
+
+  it('returns null for null/non-object input', () => {
+    expect(extractRole(null)).toBeNull()
+    expect(extractRole('admin')).toBeNull()
+  })
+})
+
+describe('isRoleAuthorized', () => {
+  it('true when role is in the allowed list', () => {
+    expect(isRoleAuthorized('admin', ['admin', 'editor'])).toBe(true)
+  })
+
+  it('false when role is not in the allowed list', () => {
+    expect(isRoleAuthorized('editor', ['admin'])).toBe(false)
+  })
+
+  it('false when role is null', () => {
+    expect(isRoleAuthorized(null, ['admin'])).toBe(false)
+  })
+})
+
+describe('resolveAllowedRoles', () => {
+  it('returns the admin roles for an /admin path', () => {
+    expect(resolveAllowedRoles('/admin')).toEqual(['admin'])
+    expect(resolveAllowedRoles('/admin/productos')).toEqual(['admin'])
+  })
+
+  it('returns null for a non-gated public path', () => {
+    expect(resolveAllowedRoles('/')).toBeNull()
+    expect(resolveAllowedRoles('/paneles')).toBeNull()
+  })
+})
 
 describe('resolveAuthGate', () => {
   // Scenario 1: skipAuth flag bypasses everything
@@ -242,27 +300,52 @@ describe('resolveAuthGate', () => {
 
     const deps: AuthGateDeps = {
       getUser: (_t) => { getUserCalled = true; return Promise.resolve({ user: null, error: { message: 'should not be called' } }) },
-      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, error: { message: 'should not be called' } }) },
+      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, user: null, error: { message: 'should not be called' } }) },
     }
 
-    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: undefined, skipAuth: true }, deps)
+    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: undefined, skipAuth: true, allowedRoles: ADMIN_ONLY }, deps)
     expect(result.action).toBe('allow')
     expect(getUserCalled).toBe(false)
     expect(refreshCalled).toBe(false)
   })
 
-  // Scenario 2: valid access token → allow
-  it('valid access token (getUser succeeds) → allow, no refresh attempted', async () => {
+  // Scenario 2: valid access token + authorized role → allow
+  it('valid access token with authorized role → allow, no refresh attempted', async () => {
     let refreshCalled = false
 
     const deps: AuthGateDeps = {
-      getUser: makeGetUser({ user: validUser, error: null }),
-      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, error: { message: 'should not be called' } }) },
+      getUser: makeGetUser({ user: adminUser, error: null }),
+      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, user: null, error: { message: 'should not be called' } }) },
     }
 
-    const result = await resolveAuthGate({ accessToken: 'valid-access', refreshToken: 'some-refresh', skipAuth: false }, deps)
+    const result = await resolveAuthGate({ accessToken: 'valid-access', refreshToken: 'some-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
     expect(result.action).toBe('allow')
     expect(refreshCalled).toBe(false)
+  })
+
+  // Scenario 2b: valid access token but UNAUTHORIZED role → forbidden (no refresh — refresh won't change the role)
+  it('valid access token without authorized role → forbidden, no refresh attempted', async () => {
+    let refreshCalled = false
+
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: userWithRole('editor'), error: null }),
+      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, user: null, error: { message: 'should not be called' } }) },
+    }
+
+    const result = await resolveAuthGate({ accessToken: 'valid-access', refreshToken: 'some-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
+    expect(result.action).toBe('forbidden')
+    expect(refreshCalled).toBe(false)
+  })
+
+  // Scenario 2c: valid access token but NO role at all → forbidden
+  it('valid access token with no role → forbidden', async () => {
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: userWithRole(null), error: null }),
+      refreshSession: makeRefreshSession({ session: null, user: null, error: { message: 'should not be called' } }),
+    }
+
+    const result = await resolveAuthGate({ accessToken: 'valid-access', refreshToken: 'some-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
+    expect(result.action).toBe('forbidden')
   })
 
   // Scenario 3: both tokens absent → redirect-to-login (no getUser or refresh)
@@ -272,23 +355,23 @@ describe('resolveAuthGate', () => {
 
     const deps: AuthGateDeps = {
       getUser: (_t) => { getUserCalled = true; return Promise.resolve({ user: null, error: { message: 'noop' } }) },
-      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, error: { message: 'noop' } }) },
+      refreshSession: (_t) => { refreshCalled = true; return Promise.resolve({ session: null, user: null, error: { message: 'noop' } }) },
     }
 
-    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: undefined, skipAuth: false }, deps)
+    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: undefined, skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
     expect(result.action).toBe('redirect-to-login')
     expect(getUserCalled).toBe(false)
     expect(refreshCalled).toBe(false)
   })
 
-  // Scenario 4: access token absent/expired + valid refresh → set-cookies-and-allow
-  it('access token absent, valid refresh token → attempt refresh, set-cookies-and-allow', async () => {
+  // Scenario 4: access token absent + valid refresh + authorized role → set-cookies-and-allow
+  it('access token absent, valid refresh with authorized role → attempt refresh, set-cookies-and-allow', async () => {
     const deps: AuthGateDeps = {
       getUser: makeGetUser({ user: null, error: { message: 'Invalid token' } }),
-      refreshSession: makeRefreshSession({ session: newTokens, error: null }),
+      refreshSession: makeRefreshSession({ session: newTokens, user: adminUser, error: null }),
     }
 
-    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: 'valid-refresh', skipAuth: false }, deps)
+    const result = await resolveAuthGate({ accessToken: undefined, refreshToken: 'valid-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
     expect(result.action).toBe('set-cookies-and-allow')
     if (result.action === 'set-cookies-and-allow') {
       expect(result.accessToken).toBe(newTokens.access_token)
@@ -296,19 +379,19 @@ describe('resolveAuthGate', () => {
     }
   })
 
-  // Scenario 4b: access token expired (getUser fails) + valid refresh → set-cookies-and-allow
-  it('access token expired (getUser fails), valid refresh token → one refresh, set-cookies-and-allow', async () => {
+  // Scenario 4b: access token expired (getUser fails) + valid refresh + authorized role → set-cookies-and-allow
+  it('access token expired (getUser fails), valid refresh with authorized role → one refresh, set-cookies-and-allow', async () => {
     let refreshCallCount = 0
 
     const deps: AuthGateDeps = {
       getUser: makeGetUser({ user: null, error: { message: 'JWT expired' } }),
       refreshSession: (_t) => {
         refreshCallCount++
-        return Promise.resolve({ session: newTokens, error: null })
+        return Promise.resolve({ session: newTokens, user: adminUser, error: null })
       },
     }
 
-    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'valid-refresh', skipAuth: false }, deps)
+    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'valid-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
     expect(result.action).toBe('set-cookies-and-allow')
     expect(refreshCallCount).toBe(1) // exactly ONE refresh attempt
     if (result.action === 'set-cookies-and-allow') {
@@ -317,14 +400,25 @@ describe('resolveAuthGate', () => {
     }
   })
 
+  // Scenario 4c: refresh succeeds but refreshed user lacks authorized role → forbidden
+  it('refresh succeeds but user lacks authorized role → forbidden', async () => {
+    const deps: AuthGateDeps = {
+      getUser: makeGetUser({ user: null, error: { message: 'JWT expired' } }),
+      refreshSession: makeRefreshSession({ session: newTokens, user: userWithRole('editor'), error: null }),
+    }
+
+    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'valid-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
+    expect(result.action).toBe('forbidden')
+  })
+
   // Scenario 5: expired access + invalid refresh → redirect-to-login
   it('expired access token + invalid refresh token → redirect-to-login', async () => {
     const deps: AuthGateDeps = {
       getUser: makeGetUser({ user: null, error: { message: 'JWT expired' } }),
-      refreshSession: makeRefreshSession({ session: null, error: { message: 'Refresh token expired' } }),
+      refreshSession: makeRefreshSession({ session: null, user: null, error: { message: 'Refresh token expired' } }),
     }
 
-    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'invalid-refresh', skipAuth: false }, deps)
+    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'invalid-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
     expect(result.action).toBe('redirect-to-login')
   })
 
@@ -335,7 +429,7 @@ describe('resolveAuthGate', () => {
       refreshSession: (_t) => Promise.reject(new Error('network failure')),
     }
 
-    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'valid-refresh', skipAuth: false }, deps)
+    const result = await resolveAuthGate({ accessToken: 'expired-access', refreshToken: 'valid-refresh', skipAuth: false, allowedRoles: ADMIN_ONLY }, deps)
     expect(result.action).toBe('redirect-to-login')
   })
 })

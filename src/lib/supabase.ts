@@ -31,6 +31,22 @@ export function getSupabaseClient(): SupabaseClient<Database> {
   return _supabaseClient
 }
 
+// Request-scoped client (SSR only) — ANON KEY + the user's access token.
+// RLS is enforced and policies evaluate with the user's JWT (app_metadata.role),
+// so admin data access is authorized by ROLE, not by bypassing RLS with the
+// service key. NOT cached: the token differs per request, so build a fresh
+// client each call. Pass the `sb-access-token` cookie value.
+export function getSupabaseForRequest(accessToken: string): SupabaseClient<Database> {
+  return createClient<Database>(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    }
+  )
+}
+
 // Convenience re-exports matching the CLAUDE.md reference API
 // NOTE: these are getter functions, not direct instances, to allow build without real env vars.
 // Usage: supabaseAdmin.auth.getUser(token) → call the getter first: getSupabaseAdmin().auth.getUser(token)
