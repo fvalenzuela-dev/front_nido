@@ -53,11 +53,11 @@ const labelClass = 'block text-sm text-muted mb-1'
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
         <label class={labelClass} for="r_value">R-value</label>
-        <input class={inputClass} id="r_value" name="r_value" type="number" min="0" step="0.01" />
+        <input class={inputClass} id="r_value" name="r_value" type="number" min="0" max="99.99" step="0.01" />
       </div>
       <div>
         <label class={labelClass} for="peso_kg_m2">Peso (kg/m²)</label>
-        <input class={inputClass} id="peso_kg_m2" name="peso_kg_m2" type="number" min="0" step="0.01" />
+        <input class={inputClass} id="peso_kg_m2" name="peso_kg_m2" type="number" min="0" max="9999.99" step="0.01" />
       </div>
       <div>
         <label class={labelClass} for="precio_clp">Precio (CLP)</label>

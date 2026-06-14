@@ -45,7 +45,14 @@ type NumberField =
 interface NumberRules {
   integer: boolean
   min: number
+  max: number
 }
+
+// Límites del schema (CLAUDE.md §6) para evitar "numeric field overflow" en la DB:
+// columnas INTEGER → int4; r_value DECIMAL(4,2) → 99.99; peso_kg_m2 DECIMAL(6,2) → 9999.99.
+const INT4_MAX = 2147483647
+const R_VALUE_MAX = 99.99
+const PESO_MAX = 9999.99
 
 function parseNumber(value: FormDataEntryValue | null, rules: NumberRules): NumberField {
   if (typeof value !== 'string') return { state: 'empty' }
@@ -55,7 +62,7 @@ function parseNumber(value: FormDataEntryValue | null, rules: NumberRules): Numb
   const n = Number(trimmed)
   if (!Number.isFinite(n)) return { state: 'invalid' }
   if (rules.integer && !Number.isInteger(n)) return { state: 'invalid' }
-  if (n < rules.min) return { state: 'invalid' }
+  if (n < rules.min || n > rules.max) return { state: 'invalid' }
   return { state: 'ok', value: n }
 }
 
@@ -70,7 +77,7 @@ function parseBoolean(value: FormDataEntryValue | null): boolean {
 
 export function parsePanelForm(formData: FormLike): PanelFormResult {
   const nombre = parseString(formData.get('nombre'))
-  const espesor = parseNumber(formData.get('espesor_mm'), { integer: true, min: 1 })
+  const espesor = parseNumber(formData.get('espesor_mm'), { integer: true, min: 1, max: INT4_MAX })
 
   // Required: nombre + espesor_mm. Blank/absent → missing_fields.
   if (nombre === null || espesor.state === 'empty') {
@@ -80,12 +87,12 @@ export function parsePanelForm(formData: FormLike): PanelFormResult {
     return { ok: false, code: 'invalid_numbers' }
   }
 
-  const ancho = parseNumber(formData.get('ancho_mm'), { integer: true, min: 1 })
-  const largo = parseNumber(formData.get('largo_mm'), { integer: true, min: 1 })
-  const stock = parseNumber(formData.get('stock'), { integer: true, min: 0 })
-  const rValue = parseNumber(formData.get('r_value'), { integer: false, min: 0 })
-  const peso = parseNumber(formData.get('peso_kg_m2'), { integer: false, min: 0 })
-  const precio = parseNumber(formData.get('precio_clp'), { integer: true, min: 0 })
+  const ancho = parseNumber(formData.get('ancho_mm'), { integer: true, min: 1, max: INT4_MAX })
+  const largo = parseNumber(formData.get('largo_mm'), { integer: true, min: 1, max: INT4_MAX })
+  const stock = parseNumber(formData.get('stock'), { integer: true, min: 0, max: INT4_MAX })
+  const rValue = parseNumber(formData.get('r_value'), { integer: false, min: 0, max: R_VALUE_MAX })
+  const peso = parseNumber(formData.get('peso_kg_m2'), { integer: false, min: 0, max: PESO_MAX })
+  const precio = parseNumber(formData.get('precio_clp'), { integer: true, min: 0, max: INT4_MAX })
 
   // Any present-but-invalid optional number rejects the whole form.
   for (const field of [ancho, largo, stock, rValue, peso, precio]) {
@@ -121,7 +128,7 @@ export function parsePanelForm(formData: FormLike): PanelFormResult {
 
 const PANEL_FORM_ERROR_MESSAGES: Record<PanelFormErrorCode, string> = {
   missing_fields: 'Completa los campos obligatorios: nombre y espesor.',
-  invalid_numbers: 'Revisa los campos numéricos: deben ser valores válidos.',
+  invalid_numbers: 'Revisa los campos numéricos: usa valores válidos dentro de los límites (R-value máx. 99,99; peso máx. 9999,99).',
   db_error: 'No se pudo guardar el panel. Intenta nuevamente.',
   server_error: 'Ocurrió un error. Intenta nuevamente.',
 }

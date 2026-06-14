@@ -142,6 +142,25 @@ describe('parsePanelForm — campos opcionales', () => {
     expect(result).toEqual({ ok: false, code: 'invalid_numbers' })
   })
 
+  it('r_value > 99.99 → invalid_numbers (DECIMAL(4,2))', () => {
+    expect(parsePanelForm(form({ nombre: 'P', espesor_mm: '90', r_value: '100' }))).toEqual({ ok: false, code: 'invalid_numbers' })
+  })
+
+  it('r_value 99.99 (límite) → ok', () => {
+    const result = parsePanelForm(form({ nombre: 'P', espesor_mm: '90', r_value: '99.99' }))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.r_value).toBe(99.99)
+  })
+
+  it('peso_kg_m2 > 9999.99 → invalid_numbers (DECIMAL(6,2))', () => {
+    expect(parsePanelForm(form({ nombre: 'P', espesor_mm: '90', peso_kg_m2: '10000' }))).toEqual({ ok: false, code: 'invalid_numbers' })
+  })
+
+  it('precio_clp fuera del rango de INTEGER → invalid_numbers', () => {
+    expect(parsePanelForm(form({ nombre: 'P', espesor_mm: '90', precio_clp: '99999999999' }))).toEqual({ ok: false, code: 'invalid_numbers' })
+  })
+
   it('stock 0 explícito → 0 (no default)', () => {
     const result = parsePanelForm(form({ nombre: 'P', espesor_mm: '90', stock: '0' }))
     expect(result.ok).toBe(true)
