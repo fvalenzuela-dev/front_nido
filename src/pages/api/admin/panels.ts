@@ -59,11 +59,16 @@ export async function handleCreatePanelPost(
 
     const { error } = await deps.insertPanel(client, parsed.value)
     if (error) {
+      // Server-only log: el mensaje real de Supabase (p.ej. violación de RLS)
+      // queda en los logs del servidor para diagnóstico; al cliente solo va el
+      // código genérico db_error.
+      console.error('[create-panel] insert rechazado por Supabase:', error)
       return context.redirect(`${FORM_PATH}?error=db_error`, 303)
     }
 
     return context.redirect(SUCCESS_PATH, 303)
-  } catch {
+  } catch (e) {
+    console.error('[create-panel] excepción inesperada:', e)
     return context.redirect(`${FORM_PATH}?error=server_error`, 303)
   }
 }
