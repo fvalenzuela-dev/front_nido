@@ -3,7 +3,7 @@ export const prerender = false
 
 import AdminLayout from '@/layouts/AdminLayout.astro'
 import { fetchPanels, toPanelCard } from '@/lib/panels'
-import { getSupabaseAdmin } from '@/lib/supabase'
+import { getSupabaseAdmin, getSupabaseForRequest } from '@/lib/supabase'
 
 // CLAUDE.md §14 rule-6 exception: plain <img> used intentionally in the card grid below.
 // imagenes[] contains arbitrary runtime-remote URLs; the imagenes-publicas bucket does not
@@ -12,7 +12,14 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 // Single migration point: toPanelCard's mainImage field in src/lib/panels.ts.
 // Revisit when a real bucket + verified remotePatterns are configured.
 
-const { panels, error } = await fetchPanels(getSupabaseAdmin())
+// Authorization is enforced by RLS via the user's role. The middleware already
+// guaranteed a valid session + admin role before this page renders, so we read
+// with a request-scoped anon client carrying the user's JWT (RLS applies).
+// Fallback to the service-key client only under the SKIP_ADMIN_AUTH dev bypass,
+// where no token exists.
+const accessToken = Astro.cookies.get('sb-access-token')?.value
+const dataClient = accessToken ? getSupabaseForRequest(accessToken) : getSupabaseAdmin()
+const { panels, error } = await fetchPanels(dataClient)
 const cards = panels.map(toPanelCard)
 ---
 
