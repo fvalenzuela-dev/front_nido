@@ -71,6 +71,21 @@ function parseBoolean(value: FormDataEntryValue | null): boolean {
   return typeof value === 'string' && value !== '' && value !== 'false' && value !== '0'
 }
 
+/** Parsed value, or a numeric default when the field was absent/blank. */
+function numberOrDefault(field: NumberField, fallback: number): number {
+  return field.state === 'ok' ? field.value : fallback
+}
+
+/** Parsed value, or null when the field was absent/blank. */
+function numberOrNull(field: NumberField): number | null {
+  return field.state === 'ok' ? field.value : null
+}
+
+/** True when any field was present but failed validation. */
+function anyInvalid(fields: NumberField[]): boolean {
+  return fields.some((field) => field.state === 'invalid')
+}
+
 // ---------------------------------------------------------------------------
 // parsePanelForm
 // ---------------------------------------------------------------------------
@@ -95,10 +110,8 @@ export function parsePanelForm(formData: FormLike): PanelFormResult {
   const precio = parseNumber(formData.get('precio_clp'), { integer: true, min: 0, max: INT4_MAX })
 
   // Any present-but-invalid optional number rejects the whole form.
-  for (const field of [ancho, largo, stock, rValue, peso, precio]) {
-    if (field.state === 'invalid') {
-      return { ok: false, code: 'invalid_numbers' }
-    }
+  if (anyInvalid([ancho, largo, stock, rValue, peso, precio])) {
+    return { ok: false, code: 'invalid_numbers' }
   }
 
   return {
@@ -107,12 +120,12 @@ export function parsePanelForm(formData: FormLike): PanelFormResult {
       nombre,
       descripcion: parseString(formData.get('descripcion')),
       espesor_mm: espesor.value,
-      ancho_mm: ancho.state === 'ok' ? ancho.value : 1220,
-      largo_mm: largo.state === 'ok' ? largo.value : 2440,
-      r_value: rValue.state === 'ok' ? rValue.value : null,
-      peso_kg_m2: peso.state === 'ok' ? peso.value : null,
-      precio_clp: precio.state === 'ok' ? precio.value : null,
-      stock: stock.state === 'ok' ? stock.value : 0,
+      ancho_mm: numberOrDefault(ancho, 1220),
+      largo_mm: numberOrDefault(largo, 2440),
+      r_value: numberOrNull(rValue),
+      peso_kg_m2: numberOrNull(peso),
+      precio_clp: numberOrNull(precio),
+      stock: numberOrDefault(stock, 0),
       publicado: parseBoolean(formData.get('publicado')),
       // Phase 1: uploads not implemented yet — arrays start empty (issue #8 scope).
       imagenes: [],
