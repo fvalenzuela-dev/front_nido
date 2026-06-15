@@ -45,6 +45,28 @@ export function toPanelCard(row: PanelRow): PanelCardVM {
   }
 }
 
+// Insert payload derived from generated Database types — stays aligned with
+// supabase gen types. The route handler normalizes form input into this shape.
+export type PanelInsert = Database['public']['Tables']['paneles_sip']['Insert']
+
+// Injectable client (ADR-3) — pass the request-scoped anon client so RLS
+// authorizes the INSERT by role (app_metadata.role). Never throws: Supabase
+// errors and exceptions are caught and returned as { error }.
+export async function insertPanel(
+  client: SupabaseClient<Database>,
+  payload: PanelInsert
+): Promise<{ error: string | null }> {
+  try {
+    const { error } = await client.from('paneles_sip').insert(payload)
+    if (error) {
+      return { error: error.message }
+    }
+    return { error: null }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Error desconocido' }
+  }
+}
+
 // Injectable client — accepts the Supabase client as a parameter so tests can
 // pass a hand-rolled stub without vi.mock hoisting (ADR-3).
 // Never throws: all Supabase errors and exceptions are caught and returned as { panels: [], error }.

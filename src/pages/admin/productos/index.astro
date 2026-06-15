@@ -26,6 +26,12 @@ const cards = panels.map(toPanelCard)
 <AdminLayout title="Paneles SIP — Admin — Nido">
   <div class="flex items-center justify-between mb-6">
     <h1 class="font-display text-3xl text-ink">Paneles SIP — Admin</h1>
+    <a
+      href="/admin/productos/nuevo"
+      class="bg-primary text-white px-5 py-2.5 rounded hover:bg-primary/90 text-sm"
+    >
+      Agregar panel SIP
+    </a>
   </div>
 
   {cards.length === 0 || error ? (

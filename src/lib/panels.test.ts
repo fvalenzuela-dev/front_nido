@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import type { Database } from '@/types/supabase'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { toPanelCard, fetchPanels } from './panels'
-import type { PanelRow } from './panels'
+import { toPanelCard, fetchPanels, insertPanel } from './panels'
+import type { PanelRow, PanelInsert } from './panels'
 
 // Full fixture row — satisfies all non-null fields from paneles_sip Row type
 const rowFixture: PanelRow = {
@@ -94,6 +94,63 @@ describe('fetchPanels', () => {
     // Must not throw — fetchPanels catches all exceptions
     const result = await fetchPanels(throwClient)
     expect(result.panels).toEqual([])
+    expect(result.error).toBe('no backend')
+  })
+})
+
+// --- insertPanel tests ---
+
+const insertPayload: PanelInsert = {
+  nombre: 'Panel nuevo',
+  espesor_mm: 100,
+  ancho_mm: 1220,
+  largo_mm: 2440,
+  stock: 0,
+  publicado: false,
+  descripcion: null,
+  r_value: null,
+  peso_kg_m2: null,
+  precio_clp: null,
+  imagenes: [],
+  archivos: [],
+}
+
+describe('insertPanel', () => {
+  it('success: client insert returns no error → { error: null }', async () => {
+    let received: unknown = null
+    const client = {
+      from: () => ({
+        insert: (payload: unknown) => {
+          received = payload
+          return Promise.resolve({ error: null })
+        },
+      }),
+    } as unknown as SupabaseClient<Database>
+
+    const result = await insertPanel(client, insertPayload)
+    expect(result.error).toBeNull()
+    expect(received).toEqual(insertPayload)
+  })
+
+  it('db-error: insert returns { error } → { error: message }', async () => {
+    const client = {
+      from: () => ({
+        insert: () => Promise.resolve({ error: { message: 'new row violates row-level security policy' } }),
+      }),
+    } as unknown as SupabaseClient<Database>
+
+    const result = await insertPanel(client, insertPayload)
+    expect(result.error).toBe('new row violates row-level security policy')
+  })
+
+  it('thrown error: client throws → caught, returns error string, does not reject', async () => {
+    const client = {
+      from: () => {
+        throw new Error('no backend')
+      },
+    } as unknown as SupabaseClient<Database>
+
+    const result = await insertPanel(client, insertPayload)
     expect(result.error).toBe('no backend')
   })
 })
